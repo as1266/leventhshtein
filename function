@@ -1,14 +1,10 @@
-CREATE OR REPLACE FUNCTION levenshtein_udf(a VARIANT, b VARIANT)
+CREATE OR REPLACE FUNCTION levenshtein_udf(a STRING, b STRING)
   RETURNS INT
   LANGUAGE JAVASCRIPT
   AS '
     // JavaScript code implementing the Levenshtein Distance algorithm
     function levenshtein_distance(a, b) {
-      // Convert the input values to strings
-      a = String(a);
-      b = String(b);
-
-      // Convert the strings to lowercase if case sensitivity is not desired
+      // Convert the input strings to lowercase if case sensitivity is not desired
       a = a.toLowerCase();
       b = b.toLowerCase();
 
