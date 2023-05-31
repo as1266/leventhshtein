@@ -1,0 +1,39 @@
+CREATE OR REPLACE FUNCTION levenshtein_udf(a STRING, b STRING)
+  RETURNS INT
+  LANGUAGE JAVASCRIPT
+  AS '
+    // JavaScript code implementing the Levenshtein Distance algorithm
+    function levenshtein_distance(a, b) {
+      // Convert the input strings to lowercase if case sensitivity is not desired
+      a = a.toLowerCase();
+      b = b.toLowerCase();
+
+      // Initialize a matrix with dimensions (a.length + 1) x (b.length + 1)
+      var matrix = [];
+      for (var i = 0; i <= a.length; i++) {
+        matrix[i] = [i];
+      }
+      for (var j = 1; j <= b.length; j++) {
+        matrix[0][j] = j;
+      }
+
+      // Calculate the Levenshtein Distance
+      for (var i = 1; i <= a.length; i++) {
+        for (var j = 1; j <= b.length; j++) {
+          if (a.charAt(i - 1) == b.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            var substitutionCost = matrix[i - 1][j - 1] + 1;
+            var deletionCost = matrix[i - 1][j] + 1;
+            var insertionCost = matrix[i][j - 1] + 1;
+            matrix[i][j] = Math.min(substitutionCost, deletionCost, insertionCost);
+          }
+        }
+      }
+
+      return matrix[a.length][b.length];
+    }
+
+    // Call the Levenshtein Distance function
+    return levenshtein_distance(A, B);
+  ';
