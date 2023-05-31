@@ -1,39 +1,46 @@
-CREATE OR REPLACE FUNCTION levenshtein_udf(a STRING, b STRING)
-  RETURNS INT
+CREATE OR REPLACE FUNCTION levenshtein_distance(a STRING, b STRING)
+  RETURNS VARCHAR
   LANGUAGE JAVASCRIPT
-  AS '
-    // JavaScript code implementing the Levenshtein Distance algorithm
-    function levenshtein_distance(a, b) {
-      // Convert the input strings to lowercase if case sensitivity is not desired
-      a = a.toLowerCase();
-      b = b.toLowerCase();
+  AS
+  '
+  function levenshtein_distance(a, b) {
+    // Convert the input strings to lowercase if case sensitivity is not desired
+    a = a.toLowerCase();
+    b = b.toLowerCase();
 
-      // Initialize a matrix with dimensions (a.length + 1) x (b.length + 1)
-      var matrix = [];
-      for (var i = 0; i <= a.length; i++) {
-        matrix[i] = [i];
-      }
-      for (var j = 1; j <= b.length; j++) {
-        matrix[0][j] = j;
-      }
-
-      // Calculate the Levenshtein Distance
-      for (var i = 1; i <= a.length; i++) {
-        for (var j = 1; j <= b.length; j++) {
-          if (a.charAt(i - 1) == b.charAt(j - 1)) {
-            matrix[i][j] = matrix[i - 1][j - 1];
-          } else {
-            var substitutionCost = matrix[i - 1][j - 1] + 1;
-            var deletionCost = matrix[i - 1][j] + 1;
-            var insertionCost = matrix[i][j - 1] + 1;
-            matrix[i][j] = Math.min(substitutionCost, deletionCost, insertionCost);
-          }
-        }
-      }
-
-      return matrix[a.length][b.length];
+    // Initialize a matrix with dimensions (a.length + 1) x (b.length + 1)
+    var matrix = new Array(a.length + 1);
+    for (var i = 0; i <= a.length; i++) {
+      matrix[i] = new Array(b.length + 1);
+      matrix[i][0] = i;
+    }
+    for (var j = 1; j <= b.length; j++) {
+      matrix[0][j] = j;
     }
 
-    // Call the Levenshtein Distance function
-    return levenshtein_distance(A, B);
+    // Calculate the Levenshtein Distance
+    for (var i = 1; i <= a.length; i++) {
+      for (var j = 1; j <= b.length; j++) {
+        if (a.charAt(i - 1) === b.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          var substitutionCost = matrix[i - 1][j - 1] + 1;
+          var deletionCost = matrix[i - 1][j] + 1;
+          var insertionCost = matrix[i][j - 1] + 1;
+          matrix[i][j] = Math.min(substitutionCost, deletionCost, insertionCost);
+        }
+      }
+    }
+
+    return matrix[a.length][b.length].toString();
+  }
+
+  return levenshtein_distance(arguments[0], arguments[1]);
   ';
+
+
+  SELECT levenshtein_distance('Name', 'Names') AS distance;
+
+  SELECT levenshtein_distance('06/12/1998', '06/11/1997') AS distance;
+
+ SELECT levenshtein_distance('1234545', '12344534') AS distance;
